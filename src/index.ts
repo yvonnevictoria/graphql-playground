@@ -30,16 +30,16 @@ const typeDefs = `#graphql
 `;
 
 const books = [
-  {
-    id:'book1',
+	{
+		id: 'book1',
 		title: 'The Awakening',
-    authorId: 'author1',
-  },
-  {
+		authorId: 'author1',
+	},
+	{
 		id: 'book2',
-    title: 'City of Glass',
-    authorId: 'author2',
-  },
+		title: 'City of Glass',
+		authorId: 'author2',
+	},
 	{
 		id: 'book3',
 		title: 'Twilight',
@@ -65,17 +65,17 @@ const authors = [
 // Resolvers define how to fetch the types defined in your schema.
 // This resolver retrieves books from the "books" array above.
 const resolvers = {
-  Query: {
-    books: () => books,
-		getBookById: (_, {id}) => books.find(book => id === book.id)
-  },
+	Query: {
+		books: () => books,
+		getBookById: (_, { id }) => books.find(book => id === book.id)
+	},
 };
 
 // The ApolloServer constructor requires two parameters: your schema
 // definition and your set of resolvers.
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+	typeDefs,
+	resolvers,
 });
 
 // Passing an ApolloServer instance to the `startStandaloneServer` function:
@@ -83,7 +83,7 @@ const server = new ApolloServer({
 //  2. installs your ApolloServer instance as middleware
 //  3. prepares your app to handle incoming requests
 const { url } = await startStandaloneServer(server, {
-  listen: { port: 4000 },
+	listen: { port: 4000 },
 });
 
-console.log(`🚀  Server ready at: ${url}`);
+console.log(`🚀 Server ready at: ${url}`);
