@@ -1,5 +1,6 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
+import depthLimit from 'graphql-depth-limit'
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -10,23 +11,29 @@ const typeDefs = `#graphql
   # This "Book" type defines the queryable fields for every book in our data source.
   type Book {
 		id: String
-    title: String
-    authorId: String
+   	    title: String
+    	author: Author
   }
 
 	type Author {
 		id: String
 		name: String
+		books: [Book]
 	}
 
   # The "Query" type is special: it lists all of the available queries that
   # clients can execute, along with the return type for each. In this
   # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
-    books: [Book]
+    	books: [Book]
 		authors: [Author]
 		getBookById(id: String): Book
+	  	getAuthorById(id: String): Author
   }
+
+	type Mutation {
+		addBook(id: String, title: String, authorId: String): Book
+	}
 `;
 
 const books = [
@@ -43,6 +50,21 @@ const books = [
 	{
 		id: 'book3',
 		title: 'Twilight',
+		authorId: 'author3'
+	},
+	{
+		id: 'book4',
+		title: 'Peppa pig',
+		authorId: 'author1',
+	},
+	{
+		id: 'book5',
+		title: 'Matilda',
+		authorId: 'author2',
+	},
+	{
+		id: 'book6',
+		title: 'Charlie and chocolate factory',
 		authorId: 'author3'
 	}
 ];
@@ -67,8 +89,26 @@ const authors = [
 const resolvers = {
 	Query: {
 		books: () => books,
-		getBookById: (_, { id }) => books.find(book => id === book.id)
+		getBookById: (_, { id }) => books.find(book => id === book.id),
+		getAuthorById: (_,{id}) => authors.find(author => id===author.id)
 	},
+	Mutation:{
+		addBook: (_, {id, title, authorId}) => {
+			const newBook = {id, title, authorId}
+			books.push(newBook);
+			return newBook;
+		}
+	},
+	Book : {
+		author: ({authorId})=> {
+			return authors.find(a=>a.id===authorId);
+		}
+	},
+	Author: {
+		books: ({id}) =>{
+			return books.filter(book => book.authorId===id);
+		}
+	}
 };
 
 // The ApolloServer constructor requires two parameters: your schema
@@ -76,6 +116,7 @@ const resolvers = {
 const server = new ApolloServer({
 	typeDefs,
 	resolvers,
+	validationRules: [depthLimit(10)],
 });
 
 // Passing an ApolloServer instance to the `startStandaloneServer` function:
